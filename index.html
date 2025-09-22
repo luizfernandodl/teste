@@ -7,71 +7,80 @@
   <style>
     :root{
       --accent:#21d07a; --accent-2:#00a86b; --bg-overlay: rgba(0,0,0,.55);
-      --text:#e7f6ef; --muted:#a9c7b9; --error:#ff6b6b; --ok:#5be37b;
+      --text:#e7f6ef; --muted:#a9c7b9; --ok:#5be37b; --err:#ff6b6b;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;
-      color:var(--text); background:#0b1d1a; overflow:hidden;
-    }
-    .bg{ position:fixed; inset:0; z-index:-2;
-      background:#000 url('assets/bg.jpg') center/cover no-repeat fixed;
-      filter:saturate(1.05) contrast(1.05); }
-    .bg::after{ content:""; position:absolute; inset:0; background:var(--bg-overlay); }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif; color:var(--text); background:#0b1d1a; overflow:hidden }
 
-    .wrap{ height:100%; display:grid; grid-template-rows:auto 1fr auto; }
-    header{ padding:18px 22px; display:flex; align-items:center; gap:14px; }
-    header .badge{background:rgba(0,0,0,.45); padding:6px 10px; border-radius:999px; font-size:.85rem; color:var(--muted)}
-    header h1{ font-size:1.25rem; margin:0; letter-spacing:.3px; text-shadow:0 3px 12px rgba(0,0,0,.5); }
+    /* Fundo */
+    .bg{ position:fixed; inset:0; z-index:-2; background:#000 url('assets/bg.jpg') center/cover no-repeat fixed; filter:saturate(1.05) contrast(1.05) }
+    .bg::after{ content:""; position:absolute; inset:0; background:var(--bg-overlay) }
 
-    .grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; padding:10px 22px 22px; align-content:start; overflow:auto; }
+    /* Layout */
+    .wrap{ height:100%; display:grid; grid-template-rows:auto 1fr auto }
+    header{ padding:18px 22px; display:flex; align-items:center; gap:12px }
+    header .badge{ background:rgba(0,0,0,.45); padding:6px 10px; border-radius:999px; font-size:.85rem; color:var(--muted) }
+    header h1{ margin:0; font-size:1.25rem; text-shadow:0 3px 12px rgba(0,0,0,.5) }
+
+    /* Área central com um único cadeado */
+    .stage{ display:grid; place-items:center; padding:12px; overflow:auto }
     .card{
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background:transparent; border:none; box-shadow:none;
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+      text-align:center; padding:16px;
     }
-    .card h2, .card p, .card .status {
-      text-shadow: 0 0 4px rgba(0,0,0,0.8);
+    .card h2, .card p, .status{ text-shadow:0 0 6px rgba(0,0,0,.8) }
+    .lock-illustration{ display:flex; align-items:center; justify-content:center }
+    .lock-illustration svg{ width:120px; height:120px }
+
+    .row{ display:flex; gap:10px; align-items:center; width:min(520px,90vw) }
+    input[type="text"]{
+      flex:1; padding:12px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.25);
+      background:rgba(0,0,0,.35); color:var(--text); font-size:1rem; outline:none
     }
-    .lock-illustration{ height:74px; display:flex; align-items:center; justify-content:center; margin:6px 0 12px; opacity:.95 }
+    button{
+      padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.15);
+      background:linear-gradient(180deg,var(--accent),var(--accent-2)); color:#062315; font-weight:700; cursor:pointer
+    }
+    .status{ min-height:22px; font-size:.95rem }
+    .ok{ color:var(--ok) } .err{ color:var(--err) }
 
-    .row{ display:flex; gap:10px; align-items:center; margin-top:auto }
-    input[type="text"]{ flex:1; padding:12px; border-radius:12px; border:1px solid #ccc; background: rgba(0,0,0,0.3); color:var(--text); font-size:1rem; outline:none }
-    button{ padding:12px 14px; border-radius:12px; background:linear-gradient(180deg,var(--accent),var(--accent-2)); color:#062315; font-weight:700; cursor:pointer; }
-    .status{ margin-top:10px; min-height:22px; font-size:.9rem }
-
-    .ok{ color:var(--ok) } .err{ color:var(--error) }
-
-    footer{ display:flex; justify-content:space-between; padding:14px 22px; }
+    footer{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 22px }
+    .progress{ display:flex; gap:8px; align-items:center }
     .dot{ width:14px; height:14px; border-radius:50%; border:2px solid #72f1b3aa; background:transparent }
     .dot.on{ background:var(--accent) }
-    .reset{ background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,.2) }
+    .reset{ background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,.18) }
 
-    .help{ position:fixed; right:14px; bottom:84px; background:rgba(0,0,0,.6); padding:8px 12px; border-radius:12px; font-size:.85rem; color:var(--muted) }
+    .help{ position:fixed; right:14px; bottom:84px; background:rgba(0,0,0,.6); color:var(--muted); padding:8px 12px; border-radius:12px; font-size:.85rem }
+    @media (max-width:640px){ .help{ left:14px; right:auto; bottom:14px } }
 
-    .modal{ position:fixed; inset:0; display:none; place-items:center; backdrop-filter:blur(4px); }
+    /* Modal final */
+    .modal{ position:fixed; inset:0; display:none; place-items:center; backdrop-filter:blur(4px) }
     .modal.show{ display:grid }
-    .modal .box{ background:#061914cc; padding:28px; border-radius:16px; text-align:center; color:var(--text); max-width:90%; }
+    .modal .box{ background:#061914cc; color:var(--text); padding:28px; border-radius:16px; text-align:center; max-width:90% }
   </style>
 </head>
 <body>
-  <div class="bg"></div>
+  <div class="bg" aria-hidden="true"></div>
   <div class="wrap">
-    <header><span class="badge">Jogo Sequencial</span><h1>Operação Caixa Preta</h1></header>
-    <main class="grid" id="grid"></main>
+    <header>
+      <span class="badge">Jogo Sequencial</span>
+      <h1>Operação Caixa Preta</h1>
+    </header>
+
+    <!-- Apenas um cadeado por vez -->
+    <main class="stage" id="stage"></main>
+
     <footer>
-      <div class="progress" id="progress"></div>
-      <button class="reset" id="btnReset">Reiniciar</button>
+      <div class="progress" id="progress" aria-label="Progresso"></div>
+      <button class="reset" id="btnReset" title="Reiniciar">Reiniciar</button>
     </footer>
   </div>
 
   <div class="help">Dica: as senhas não diferenciam maiúsculas/minúsculas.</div>
 
+  <!-- Modal final -->
   <div class="modal" id="congrats">
     <div class="box">
       <h3>Parabéns, vocês concluíram o desafio 🎉</h3>
@@ -80,6 +89,7 @@
   </div>
 
   <script>
+    // Etapas e senhas
     const LOCKS = [
       { id: 1, titulo: 'Cadeado 1', senha: 'GOLPE' },
       { id: 2, titulo: 'Cadeado 2', senha: 'CEMCC' },
@@ -87,16 +97,93 @@
       { id: 4, titulo: 'Cadeado 4', senha: 'SUBORNO' },
       { id: 5, titulo: 'Cadeado 5', senha: '212' },
     ];
-    const normalize = v => (v||'').toString().trim().toUpperCase().normalize('NFD').replace(/\p{Diacritic}/gu,'');
-    const LS_KEY = 'cadeados-v1'; let state = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
-    const save = () => localStorage.setItem(LS_KEY, JSON.stringify(state));
-    const grid = document.getElementById("grid"), modal=document.getElementById("congrats");
 
-    function lock(open){
-      const s=open?'#5be37b':'#e7f6ef';
-      const p=open?'<path d="M36 24v-6a12 12 0 0 0-24 0"/>':'<path d="M30 18v-2a12 12 0 0 0-24 0v8"/>';
-      return `<svg viewBox="0 0 48 48" width="80">${p}<rect x="6" y="18" width="36" height="26" rx="4" fill="none" stroke="${s}" stroke-width="3"/><circle cx="24" cy="32" r="3" fill="${s}"/></svg>`;
+    // Estado
+    const LS_KEY = 'cadeados-one-by-one-v1';
+    let state = JSON.parse(localStorage.getItem(LS_KEY) || '{"idx":0}');
+    const save = () => localStorage.setItem(LS_KEY, JSON.stringify(state));
+
+    // Util
+    const normalize = v => (v||'').toString().trim().toUpperCase()
+      .normalize('NFD').replace(/\p{Diacritic}/gu,'');
+
+    // DOM
+    const stage = document.getElementById('stage');
+    const progress = document.getElementById('progress');
+    const modal = document.getElementById('congrats');
+    document.getElementById('btnReset').onclick = () => { state={idx:0}; save(); render(); };
+    document.getElementById('closeModal').onclick = () => modal.classList.remove('show');
+
+    // Ícone de cadeado
+    function lockSVG(open=false){
+      const stroke = open ? '#5be37b' : '#e7f6ef';
+      const shackle = open
+        ? '<path d="M36 24v-6a12 12 0 0 0-24 0" fill="none" stroke="'+stroke+'" stroke-width="3" stroke-linecap="round"/>'
+        : '<path d="M30 18v-2a12 12 0 0 0-24 0v8" fill="none" stroke="'+stroke+'" stroke-width="3" stroke-linecap="round"/>';
+      return `
+        <svg viewBox="0 0 48 48" role="img" aria-label="Cadeado">
+          ${shackle}
+          <rect x="6" y="18" width="36" height="26" rx="4" fill="none" stroke="${stroke}" stroke-width="3"/>
+          <circle cx="24" cy="32" r="3" fill="${stroke}"/>
+        </svg>`;
     }
 
     function render(){
-      grid.innerHTML = ""
+      stage.innerHTML = '';
+      progress.innerHTML = '';
+
+      // progresso (bolinhas)
+      LOCKS.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i < state.idx ? ' on' : '');
+        progress.appendChild(d);
+      });
+
+      // terminou?
+      if (state.idx >= LOCKS.length) {
+        modal.classList.add('show');
+        return;
+      }
+
+      const current = LOCKS[state.idx];
+      const card = document.createElement('section');
+      card.className = 'card';
+      card.innerHTML = `
+        <h2>${current.titulo}</h2>
+        <div class="lock-illustration">${lockSVG(false)}</div>
+        <p class="muted" aria-live="polite">Ativo: digite a senha para abrir.</p>
+        <div class="row">
+          <input id="pass" type="text" autocomplete="off" placeholder="Senha do ${state.idx+1}º" aria-label="Senha do cadeado atual">
+          <button id="btnOpen">Abrir</button>
+        </div>
+        <div class="status" id="status"></div>
+      `;
+
+      const input = card.querySelector('#pass');
+      const btn = card.querySelector('#btnOpen');
+      const status = card.querySelector('#status');
+
+      function tryOpen(){
+        const val = normalize(input.value);
+        if (!val) { status.innerHTML = '<span class="err">Digite a senha.</span>'; return; }
+        if (val === normalize(current.senha)) {
+          // avança para o próximo cadeado
+          state.idx += 1; save();
+          // pequena animação/feedback
+          status.innerHTML = '<span class="ok">Cadeado aberto!</span>';
+          setTimeout(render, 250);
+        } else {
+          status.innerHTML = '<span class="err">Senha incorreta.</span>';
+        }
+      }
+
+      btn.addEventListener('click', tryOpen);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') tryOpen(); });
+      stage.appendChild(card);
+      input.focus();
+    }
+
+    render();
+  </script>
+</body>
+</html>
